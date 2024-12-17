@@ -14,7 +14,7 @@ type TgBot struct {
 	errChan chan error
 }
 
-func NewTgBot() internal.Bot {
+func NewTgBot() *TgBot {
 	errChan := make(chan error, 1)
 	s := &http.Server{
 		ReadHeaderTimeout: 1 * time.Second,
@@ -25,7 +25,7 @@ func NewTgBot() internal.Bot {
 	}
 }
 
-func (b *TgBot) Start(_ context.Context, _ *internal.Data) error {
+func (b *TgBot) Start(_ context.Context, _ []*internal.Subject) error {
 	go func() {
 		if err := b.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			b.errChan <- err

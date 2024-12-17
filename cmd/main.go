@@ -13,7 +13,10 @@ import (
 func main() {
 	ctx := context.Background()
 
-	parser := parser.NewExcelParser()
+	parser, err := parser.NewExcelParser("./retakes")
+	if err != nil {
+		log.Fatal("failed to initialize parser", err)
+	}
 	bot := bot.NewTgBot()
 
 	data, err := parser.Parse()

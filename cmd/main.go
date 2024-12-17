@@ -23,6 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to parse input data", err.Error())
 	}
+	log.Println("Parsing completed!")
 
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()

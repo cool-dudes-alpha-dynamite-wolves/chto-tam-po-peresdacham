@@ -4,10 +4,10 @@ import "time"
 
 type Subject struct {
 	Discipline  *string
-	Institute   *string
+	Institute   string
 	Department  *string
 	Year        *int
-	Group       *string
+	Group       string
 	Professor   *string
 	Date        *time.Time
 	TimeOfStart *time.Time

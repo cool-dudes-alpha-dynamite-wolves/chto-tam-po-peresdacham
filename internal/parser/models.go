@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"regexp"
 	"time"
 )
 
@@ -9,14 +10,58 @@ const (
 
 	dateLayout        = "02.01.2006"
 	timeOfStartLayout = "15:04"
+
+	disciplinePatternRegex = "^[А-Я]{3,4}-\\d{2}-\\d$"
 )
+
+type institute string
+
+const (
+	itknInstitute   institute = "ИТКН"
+	iknInstitute    institute = "ИКН" // equal to "ИТКН"
+	ekotehInstitute institute = "ЭкоТех"
+	inminInstitute  institute = "ИНМиН"
+	euppInstitute   institute = "ЭУПП"
+	iboInstitute    institute = "ИБО"
+	inobrInstitute  institute = "ИНОБР"
+	giInstitute     institute = "ГИ"
+)
+
+func (i institute) isValid() bool {
+	_, ok := institute2groupMapping[i]
+	return ok
+}
+
+type group string
+
+func (d group) isValid() bool {
+	if ok, err := regexp.MatchString(disciplinePatternRegex, string(d)); err == nil && ok {
+		return true
+	}
+	return false
+}
+
+// rawSubject represents subject, that we get directly
+// from the table
+type rawSubject struct {
+	department  *string
+	institute   *institute
+	discipline  *string
+	year        *int
+	groups      []*group
+	professor   *string
+	date        *time.Time
+	timeOfStart *time.Time
+	classroom   *string
+	comment     *string
+}
 
 type subject struct {
 	department  *string
-	institute   *string
+	institute   *institute
 	discipline  *string
 	year        *int
-	group       *string
+	group       *group
 	professor   *string
 	date        *time.Time
 	timeOfStart *time.Time
@@ -25,6 +70,41 @@ type subject struct {
 }
 
 var (
+	institute2groupMapping = map[institute][]string{
+		itknInstitute: {
+			"БИВТ",
+			"БПМ",
+			"ББИ",
+		},
+		iknInstitute: {
+			"БИВТ",
+			"БПМ",
+			"ББИ",
+		},
+		ekotehInstitute: {
+			"БМТ",
+			"БТМО",
+		},
+		inminInstitute: {
+			"БМТМ",
+			"БФЗ",
+			"БНТМ",
+			"БЭН",
+		},
+		euppInstitute: {
+			"БЭК",
+			"БТД",
+		},
+		iboInstitute: {
+			"БЛГ",
+		},
+		giInstitute: {
+			"СГД",
+			"БЭЭ",
+		},
+		inobrInstitute: {},
+	}
+
 	validDepartmentFields = map[string]struct{}{
 		"Кафедра": {},
 	}

@@ -17,6 +17,11 @@ import (
 	"github.com/cool-dudes-alpha-dynamite-wolves/chto-tam-po-peresdacham/pkg"
 )
 
+var (
+	cachedSubjects []*internal.Subject
+	cacheMutex     sync.RWMutex
+)
+
 type ExcelParser struct {
 	pathToRetakes string
 }
@@ -34,6 +39,30 @@ func NewExcelParser(pathToRetakes string) (*ExcelParser, error) {
 	return &ExcelParser{
 		pathToRetakes: pathToRetakes,
 	}, nil
+}
+
+func (p *ExcelParser) ParseOnce() ([]*internal.Subject, error) {
+	// Защита от конкурентного доступа
+	cacheMutex.RLock()
+	defer cacheMutex.RUnlock()
+	if cachedSubjects != nil {
+		cacheMutex.RUnlock()
+		return cachedSubjects, nil
+	}
+	cacheMutex.RUnlock()
+
+	// Если кэш пустой, выполняем парсинг
+	subjects, err := p.Parse()
+	if err != nil {
+		return nil, err
+	}
+
+	// Сохраняем данные в кэш
+	cacheMutex.Lock()
+	cachedSubjects = subjects
+	cacheMutex.Unlock()
+
+	return cachedSubjects, nil
 }
 
 func (p *ExcelParser) Parse() ([]*internal.Subject, error) {

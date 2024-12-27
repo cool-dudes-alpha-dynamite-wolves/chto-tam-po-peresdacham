@@ -52,7 +52,7 @@ func (s *subject) validate() error {
 }
 
 func (s *subject) toDomain() *internal.Subject {
-	return &internal.Subject{
+	retSubj := &internal.Subject{
 		Discipline:  s.discipline,
 		Institute:   string(*s.institute),
 		Department:  s.department,
@@ -64,4 +64,10 @@ func (s *subject) toDomain() *internal.Subject {
 		Classroom:   s.classroom,
 		Comment:     s.comment,
 	}
+
+	// TODO: В домене, институт ИТКН = ИКН
+	if *s.institute == itknInstitute {
+		retSubj.Institute = string(iknInstitute)
+	}
+	return retSubj
 }

@@ -83,6 +83,11 @@ func (b *TgBot) Start(_ context.Context, subjects []*internal.Subject) error {
 }
 
 func (b *TgBot) handleSchedule(chatID int64, instituteFilter, groupFilter string) {
+	// TODO: ИТКН и ИКН - один институт, был ребрендинг ;-)
+	if instituteFilter == "ИТКН" {
+		instituteFilter = "ИКН"
+	}
+
 	message := "Расписание пересдач:\n"
 	for _, subj := range b.subjects {
 		if !(subj.Institute == instituteFilter && subj.Group == groupFilter) {

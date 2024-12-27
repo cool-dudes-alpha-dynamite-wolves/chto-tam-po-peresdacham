@@ -13,18 +13,21 @@ import (
 func main() {
 	ctx := context.Background()
 
+	// Инициализация парсера
 	parser, err := parser.NewExcelParser("./retakes")
 	if err != nil {
 		log.Fatal("failed to initialize parser", err)
 	}
-	bot := bot.NewTgBot()
 
-	data, err := parser.Parse()
+	// Парсинг данных с использованием кэша
+	data, err := parser.ParseOnce()
 	if err != nil {
 		log.Fatal("failed to parse input data", err.Error())
 	}
 	log.Println("Parsing completed!")
 
+	// Инициализация и запуск бота
+	bot := bot.NewTgBot()
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
@@ -44,7 +47,6 @@ func main() {
 			}
 		}
 	}()
-
 	log.Println("app is shutting down...")
 	stop()
 

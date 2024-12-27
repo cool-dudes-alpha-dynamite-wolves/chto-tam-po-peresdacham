@@ -3,12 +3,11 @@ module github.com/cool-dudes-alpha-dynamite-wolves/chto-tam-po-peresdacham
 go 1.23.0
 
 require (
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/xuri/excelize/v2 v2.9.0
-	golang.org/x/sync v0.8.0
 )
 
 require (
-	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.4 // indirect

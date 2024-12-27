@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cool-dudes-alpha-dynamite-wolves/chto-tam-po-peresdacham/internal"
 	telegram "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
+	"github.com/cool-dudes-alpha-dynamite-wolves/chto-tam-po-peresdacham/internal"
 )
 
 type TgBot struct {
@@ -19,26 +20,29 @@ type TgBot struct {
 	bot      *telegram.BotAPI
 	subjects []*internal.Subject // Данные из парсера
 }
+
 type Subject struct {
 	Name string    // Название предмета
 	Date time.Time // Дата пересдачи
 }
 
-func NewTgBot() *TgBot {
+func NewTgBot(token string) (*TgBot, error) {
 	errChan := make(chan error, 1)
-	botAPI, err := telegram.NewBotAPI(token)
+	bot, err := telegram.NewBotAPI(token)
 	if err != nil {
-		log.Fatalf("failed to initialize Telegram Bot API: %v", err)
+		return nil, fmt.Errorf("failed to initialize Telegram Bot API: %v", err)
 	}
+
+	// bot.Debug = true
 
 	return &TgBot{
 		server:  &http.Server{ReadHeaderTimeout: 1 * time.Second},
 		errChan: errChan,
-		bot:     botAPI,
-	}
+		bot:     bot,
+	}, nil
 }
 
-func (b *TgBot) Start(ctx context.Context, subjects []*internal.Subject) error {
+func (b *TgBot) Start(_ context.Context, subjects []*internal.Subject) error {
 	b.subjects = subjects
 	updateConfig := telegram.NewUpdate(0)
 	updateConfig.Timeout = 60

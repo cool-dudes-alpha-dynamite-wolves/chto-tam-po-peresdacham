@@ -45,4 +45,4 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/bot-app:latest
             docker stop bot-app || true
             docker rm bot-app || true
-            docker run -d --name bot-app -p ${{ secrets.PORT }}:${{ secrets.REMOTE_USER }} ${{ secrets.DOCKER_USERNAME }}/bot-app:latest --tg.token='${{ secrets.TG_BOT_TOKEN }}'
+            docker run -d --name bot-app -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/bot-app:latest --tg.token='${{ secrets.TG_BOT_TOKEN }}'

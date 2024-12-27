@@ -68,7 +68,6 @@ func (p *ExcelParser) Parse() ([]*internal.Subject, error) {
 
 	result := make([]*internal.Subject, 0)
 	for subj := range subjChan {
-		fmt.Printf("%+#v\n", subj)
 		result = append(result, subj.toDomain())
 	}
 
@@ -171,6 +170,9 @@ func (p *ExcelParser) getSubjectOpts(headers []string) (opts []rawSubjectOption)
 					for idx, rawGroup := range groups {
 						groups[idx] = strings.Trim(rawGroup, "\r\n")
 					}
+					s.groups = pkg.Map(groups, func(g string) *group {
+						return pkg.Pointer(group(g))
+					})
 					return nil
 				}
 				return fmt.Errorf("got invalid group data %s", value)

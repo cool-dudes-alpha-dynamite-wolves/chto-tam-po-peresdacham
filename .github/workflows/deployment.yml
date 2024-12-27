@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.REMOTE_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/my-app:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/bot-app:latest
             docker stop my-app || true
             docker rm my-app || true
             docker run -d --name bot-app -p ${{ secrets.PORT }}:${{ secrets.REMOTE_USER }} ${{ secrets.DOCKER_USERNAME }}/bot-app:latest --tg.token='${{ secrets.TG_BOT_TOKEN }}'

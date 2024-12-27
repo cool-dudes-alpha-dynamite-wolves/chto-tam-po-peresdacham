@@ -196,7 +196,7 @@ func (p *ExcelParser) getSubjectOpts(headers []string) (opts []rawSubjectOption)
 			})
 		} else if _, ok = validDateFields[cell]; ok {
 			opts = append(opts, func(s *rawSubject, value string) error {
-				v, err := time.Parse(dateLayout, value)
+				v, err := time.Parse(internal.DateLayout, value)
 				if err != nil {
 					return fmt.Errorf("can not parse date %s; err: %s", value, err)
 				}
@@ -205,7 +205,7 @@ func (p *ExcelParser) getSubjectOpts(headers []string) (opts []rawSubjectOption)
 			})
 		} else if _, ok = validTimeOfStartFields[cell]; ok {
 			opts = append(opts, func(s *rawSubject, value string) error {
-				v, err := time.Parse(timeOfStartLayout, value)
+				v, err := time.Parse(internal.TimeOfStartLayout, value)
 				if err != nil {
 					return fmt.Errorf("can not parse time of start %s; err: %s", value, err)
 				}

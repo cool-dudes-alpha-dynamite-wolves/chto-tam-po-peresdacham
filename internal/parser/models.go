@@ -8,9 +8,6 @@ import (
 const (
 	requiredFieldsInARowMinimum = 3
 
-	dateLayout        = "02.01.2006"
-	timeOfStartLayout = "15:04"
-
 	disciplinePatternRegex = "^[А-Я]{3,4}-\\d{2}-\\d$"
 )
 

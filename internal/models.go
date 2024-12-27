@@ -2,6 +2,11 @@ package internal
 
 import "time"
 
+const (
+	DateLayout        = "02.01.2006"
+	TimeOfStartLayout = "15:04"
+)
+
 type Subject struct {
 	Discipline  *string
 	Institute   string

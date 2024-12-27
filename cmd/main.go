@@ -4,25 +4,22 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
 	"os/signal"
 	"syscall"
+
+	"go.uber.org/multierr"
 
 	"github.com/cool-dudes-alpha-dynamite-wolves/chto-tam-po-peresdacham/internal/bot"
 	"github.com/cool-dudes-alpha-dynamite-wolves/chto-tam-po-peresdacham/internal/parser"
 )
 
 var (
-
 	// хранить секреты в коде плохо, поэтому используем флаги
 	// "1953480583:AAEU7eBaZnCUt525oUkCMRCQxK1TJmaoVd4"
 	botToken = flag.String("tg.token", "", "token for telegram")
-
-	// это не секрет, но для простоты тоже выносим под конфиг
-	// "https://5872-95-165-1-28.eu.ngrok.io"
-	WebhookURL = flag.String("tg.webhook", "", "webhook addr for telegram")
-
 	// запуск выглядит так:
-	// go run bot.go -tg.token="1953480583:AAEU7eBaZnCUt525oUkCMRCQxK1TJmaoVd4" -tg.webhook="https://5872-95-165-1-28.eu.ngrok.io"
+	// go run bot.go -tg.token="1953480583:AAEU7eBaZnCUt525oUkCMRCQxK1TJmaoVd4"
 )
 
 func main() {
@@ -44,19 +41,27 @@ func main() {
 	log.Println("Parsing completed!")
 
 	// Инициализация и запуск бота
-	bot, err := bot.NewTgBot(*botToken)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+	log.Println("PORT:", port)
+	if *botToken == "" {
+		*botToken = os.Getenv("BOT_TOKEN")
+	}
+	bot, err := bot.NewTgBot(*botToken, port)
 	if err != nil {
 		log.Fatal("failed to initialize bot", err)
 	}
+
 	ctx, stop := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	err = func() error {
-		if err = bot.Start(ctx, data); err != nil {
-			log.Println("failed to start bot:", err.Error())
-			return err
-		}
-		for {
+	err = run(ctx, stop,
+		func(ctx context.Context) error {
+			return bot.Start(ctx, data)
+		},
+		func(ctx context.Context) error {
 			select {
 			case <-ctx.Done():
 				log.Println("got stop signal")
@@ -65,12 +70,34 @@ func main() {
 				log.Println("got err from bot:", err.Error())
 				return err
 			}
-		}
-	}()
-	log.Println("app is shutting down...")
-	stop()
+		},
+	)
+
+	log.Println("application is shutting down...")
+	if err != nil {
+		log.Println("failed to shutdown application", err)
+	}
 
 	if err = bot.Shutdown(ctx); err != nil {
 		log.Println("got error during bot shutdown:", err.Error())
 	}
+}
+
+func run(ctx context.Context, shutdown func(), startUpFuncs ...func(ctx context.Context) error) error {
+	errCh := make(chan error)
+	for i := range startUpFuncs {
+		go func(i int) { errCh <- startUpFuncs[i](ctx) }(i)
+	}
+
+	var err error
+	var closed bool
+	for range startUpFuncs {
+		err = multierr.Append(err, <-errCh)
+		if err != nil && !closed {
+			shutdown()
+			closed = true
+		}
+	}
+
+	return err
 }

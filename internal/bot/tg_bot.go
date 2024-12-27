@@ -21,12 +21,7 @@ type TgBot struct {
 	subjects []*internal.Subject // Данные из парсера
 }
 
-type Subject struct {
-	Name string    // Название предмета
-	Date time.Time // Дата пересдачи
-}
-
-func NewTgBot(token string) (*TgBot, error) {
+func NewTgBot(token, port string) (*TgBot, error) {
 	errChan := make(chan error, 1)
 	bot, err := telegram.NewBotAPI(token)
 	if err != nil {
@@ -36,7 +31,10 @@ func NewTgBot(token string) (*TgBot, error) {
 	// bot.Debug = true
 
 	return &TgBot{
-		server:  &http.Server{ReadHeaderTimeout: 1 * time.Second},
+		server: &http.Server{
+			ReadHeaderTimeout: 1 * time.Second,
+			Addr:              ":" + port,
+		},
 		errChan: errChan,
 		bot:     bot,
 	}, nil
@@ -85,39 +83,12 @@ func (b *TgBot) Start(_ context.Context, subjects []*internal.Subject) error {
 }
 
 func (b *TgBot) handleSchedule(chatID int64, instituteFilter, groupFilter string) {
-	if len(b.subjects) == 0 {
-		b.sendMessage(chatID, "Нет данных о пересдачах.")
-		return
-	}
-
 	message := "Расписание пересдач:\n"
 	for _, subj := range b.subjects {
-		if subj.Institute != instituteFilter {
+		if !(subj.Institute == instituteFilter && subj.Group == groupFilter) {
 			continue
 		}
-		if !strings.HasPrefix(subj.Group, groupFilter) {
-			continue
-		}
-
-		date := "не указана"
-		timeOfStart := "не указано"
-
-		if subj.Date != nil {
-			date = subj.Date.Format("02.01.2006")
-		}
-		if subj.TimeOfStart != nil {
-			timeOfStart = subj.TimeOfStart.Format("15:04")
-		}
-
-		message += fmt.Sprintf(
-			"- Дисциплина: %s\n  Институт: %s\n  Группа: %s\n  Дата: %s\n  Время: %s\n  Аудитория: %s\n\n",
-			getOrDefault(subj.Discipline, "не указана"),
-			subj.Institute,
-			subj.Group,
-			date,
-			timeOfStart,
-			getOrDefault(subj.Classroom, "не указана"),
-		)
+		message += b.constructSubjectMsg(subj)
 	}
 	if message == "Расписание пересдач:\n" {
 		message = "Нет данных для выбранных фильтров."
@@ -125,17 +96,10 @@ func (b *TgBot) handleSchedule(chatID int64, instituteFilter, groupFilter string
 	b.sendMessage(chatID, message)
 }
 
-func getOrDefault(value *string, defaultValue string) string {
-	if value != nil {
-		return *value
-	}
-	return defaultValue
-}
-
 func (b *TgBot) sendMessage(chatID int64, text string) {
 	msg := telegram.NewMessage(chatID, text)
 	if _, err := b.bot.Send(msg); err != nil {
-		log.Printf("Ошибка отправки сообщения: %v", err)
+		log.Printf("Ошибка отправки сообщения: %v\n", err)
 	}
 }
 

@@ -61,13 +61,12 @@ func (b *TgBot) Start(_ context.Context, subjects []*internal.Subject) error {
 				b.sendMessage(update.Message.Chat.ID, "Список команд: /start, /help, /schedule")
 			case "schedule":
 				args := strings.Fields(update.Message.Text)
-				if len(args) < 3 {
-					b.sendMessage(update.Message.Chat.ID, "Введите команду в формате: /schedule <Институт> <Группа>")
+				if len(args) != 2 {
+					b.sendMessage(update.Message.Chat.ID, "Введите команду в формате: /schedule <Группа>")
 					return
 				}
-				instituteFilter := args[1]
-				groupFilter := args[2]
-				b.handleSchedule(update.Message.Chat.ID, instituteFilter, groupFilter)
+				groupFilter := args[1]
+				b.handleSchedule(update.Message.Chat.ID, groupFilter)
 			default:
 				b.sendMessage(update.Message.Chat.ID, "Неизвестная команда. Введите /help.")
 			}
@@ -82,15 +81,10 @@ func (b *TgBot) Start(_ context.Context, subjects []*internal.Subject) error {
 	return nil
 }
 
-func (b *TgBot) handleSchedule(chatID int64, instituteFilter, groupFilter string) {
-	// TODO: ИТКН и ИКН - один институт, был ребрендинг ;-)
-	if instituteFilter == "ИТКН" {
-		instituteFilter = "ИКН"
-	}
-
+func (b *TgBot) handleSchedule(chatID int64, groupFilter string) {
 	message := "Расписание пересдач:\n"
 	for _, subj := range b.subjects {
-		if !(subj.Institute == instituteFilter && subj.Group == groupFilter) {
+		if subj.Group != groupFilter {
 			continue
 		}
 		message += b.constructSubjectMsg(subj)

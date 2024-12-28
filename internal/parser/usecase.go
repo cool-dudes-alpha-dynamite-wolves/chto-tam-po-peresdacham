@@ -45,7 +45,12 @@ func (s *subject) validate() error {
 		}
 	}
 	if !found {
-		return fmt.Errorf("subject has unknown group")
+		if s.discipline != nil {
+			if _, ok := baseDisciplines[*s.discipline]; ok {
+				return nil
+			}
+		}
+		return fmt.Errorf("subject has unknown group: %s", string(*s.group))
 	}
 
 	return nil

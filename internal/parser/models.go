@@ -132,4 +132,8 @@ var (
 	validCommentFields = map[string]struct{}{
 		"Примечание": {},
 	}
+
+	baseDisciplines = map[string]struct{}{
+		"Математика": {},
+	}
 )

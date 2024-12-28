@@ -51,9 +51,6 @@ func (p *ExcelParser) Parse() ([]*internal.Subject, error) {
 	subjChan := make(chan *subject)
 	wg := &sync.WaitGroup{}
 	for _, filePath := range files {
-		if filePath != "retakes/obektno-orientirovannoe-programmirovanie.xlsx" {
-			continue
-		}
 		wg.Add(1)
 		go func(filePath string) {
 			defer wg.Done()
